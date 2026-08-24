@@ -1,0 +1,22 @@
+# Generated/derived data -- not part of the reproducible source, and some
+# of it is large and/or derived from the private dataset.
+Models/
+DatastoresTran/
+DatastoresStatFeatures/
+*.mat
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.out
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+*.asv
+*.m~
