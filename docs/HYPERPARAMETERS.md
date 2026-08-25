@@ -25,7 +25,9 @@ table ever disagree, this table (and the underlying `.m` file) is authoritative.
 | Mini-batch size | 64 | L130 |
 | Max epochs | 10 | L131 |
 | Initial learning rate | 5e-4 | L134 |
+| Learning-rate schedule | piecewise, ×0.2 every 5 epochs | L136-137 |
 | L2 regularization | 0.005 | L135 |
+| Gradient threshold | 1 | L140 |
 | Validation patience (early stopping) | 5 | L147 |
 | Large capacity | 6 Inception blocks, d_model=128, 8 heads | -- |
 | Medium capacity | 4 Inception blocks, d_model=64, 4 heads | -- |
@@ -50,9 +52,11 @@ table ever disagree, this table (and the underlying `.m` file) is authoritative.
 | Parameter | Value | Source line |
 |---|---|---|
 | Exploration coefficient α | 0.5 | L53 |
+| Max warm-start epochs | 20 | L54 |
+| Validation patience (early stopping) | 5 | L55 |
 | Ridge regression prior | `A_i` initialized to identity, `b_i` initialized to zero, per arm | -- |
 | Update rule | Sherman-Morrison rank-one update, O(d²) | -- |
-| Warm-start protocol | Month-0 only, same shuffled-epoch procedure and validation-based stopping rule as Softmax | -- |
+| Warm-start protocol | Month-0 only, same shuffled-epoch procedure as Softmax; stopping rule is equivalent in kind (validation-based patience) but not identical in epoch budget or patience value -- see max warm-start epochs / validation patience above vs. Softmax's 200 / 10 | -- |
 | Evaluation after freeze | pure exploitation (`argmax θᵀx`), exploration term dropped | -- |
 
 ## SVM (`03_classical_baselines/trainSVMHead.m`)
