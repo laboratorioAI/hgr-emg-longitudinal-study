@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage{spconf,amsmath,amssymb,graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{url}
+
+% NOTE: this file targets the official ICASSP two-column "spconf" style
+% (spconf.sty + IEEEbib.bst), confirmed against the ICASSP author-kit
+% Template.tex. If the conference portal's downloaded kit differs, drop this
+% preamble in favor of the official kit and keep only the content below
+% \begin{document}.
+
+\title{A Longitudinal Comparison of Supervised and Reinforcement-Learning Decision Paradigms for sEMG Hand-Gesture Recognition}
+
+\name{L.-G. Mac\'ias-Santill\'an, L. I. Barona L\'opez, M. E. Benalc\'azar, \'A. L. Valdivieso Caraguay}
+\address{Artificial Intelligence and Computer Vision Research Lab, Departamento de Inform\'atica y\\
+Ciencias de la Computaci\'on (DICC), Escuela Polit\'ecnica Nacional, Quito, 170143, Ecuador}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Surface electromyography (sEMG) is non-stationary, yet most hand-gesture-recognition (HGR) systems are calibrated once and never re-evaluated across sessions. We report a six-month longitudinal study that separates two questions usually left unexamined: does a frozen deep representation actually shift over time, independently of downstream accuracy; and, once a representation is learned, does the choice between a supervised decision head and a reinforcement-learning-style one change how the system responds to that shift. We freeze a CNN-Transformer-encoder backbone (three capacities) after one calibration session and evaluate two decision heads, a supervised Softmax classifier and a LinUCB contextual bandit, on six later sessions from 19 participants. Two independent two-sample tests (MMD$^2$, domain-classifier $\mathcal{A}$-distance) detect a statistically significant covariate shift in the frozen representation every month ($p<0.05$, Holm-Bonferroni-corrected), while accuracy falls only 4.6--5.9\% across all six backbone-paradigm combinations, and this narrow band does not widen as backbone capacity shrinks by two orders of magnitude. These results indicate that the frozen representation drifts measurably, that the size of the resulting accuracy decline is governed by backbone capacity rather than by whether the decision head is a supervised classifier or a bandit, and that a stable accuracy curve alone is not sufficient evidence that a longitudinal HGR system is unaffected by drift.
+\end{abstract}
+
+\begin{keywords}
+hand gesture recognition, surface electromyography, covariate shift, contextual bandits, Transformer encoder, longitudinal evaluation
+\end{keywords}
+
+\section{Introduction}
+\label{sec:intro}
+
+Surface electromyography (sEMG) is a widely used sensing modality for hand-gesture recognition (HGR), with applications in prosthetic control, rehabilitation, and human-machine interaction \cite{Jaramillo2020,Benalcazar2017}. sEMG signals are non-stationary: their statistics change across sessions due to electrode placement, fatigue, and skin impedance \cite{Montazerin2022,transradialSimon}. Despite this, most HGR studies still evaluate a model within a single session or under short-term cross-validation \cite{Jaramillo2020}, and reinforcement-learning-style decision mechanisms remain comparatively unexplored relative to supervised classifiers in this literature \cite{VasconezV2022,VASCONEZ2023}.
+
+This leaves two questions largely untested with a formal procedure, rather than only assumed. First, if a deep feature extractor is frozen after calibration, does its output distribution actually shift over months, independently of whether downstream accuracy changes (a stable accuracy curve can mask a real shift if the decision head happens to compensate for it). Second, once a discriminative representation is learned, does the choice between a supervised decision head and a reinforcement-learning-style one change how the system responds to that shift; contrasting two decision paradigms on an otherwise identical, frozen representation isolates this question in a way that contrasting two architectures cannot, since architecture changes would only speak to representation capacity.
+
+We answer both questions with a longitudinal design. A CNN-Transformer-encoder backbone is trained once on session zero (Month~0) and frozen; its 128-d output is tested directly for covariate shift across six later monthly sessions with two independent two-sample tests, and separately scored with a supervised Softmax head and a LinUCB contextual bandit, across three backbone capacities, to test whether any pattern found is an artifact of one network size rather than a property of the representation itself.
+
+Our contributions are: (1) statistical evidence, from two independent two-sample tests, that a frozen deep sEMG representation exhibits covariate shift across six months, surviving a Holm-Bonferroni correction for multiple comparisons; and (2) a matched comparison of a supervised Softmax head against a LinUCB contextual bandit on the identical frozen representation across three backbone capacities, showing the accuracy drop is governed by backbone capacity, not decision paradigm.
+
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Longitudinal Protocol}
+Nineteen participants were recorded across seven sessions spanning six months (Month~0 through Month~6). Every model is calibrated once on Month~0 and evaluated, frozen, on Month~1--6, with no further updates: this is what lets any accuracy change in later months be attributed to the passage of time rather than to continued learning. Within Month~0, repetitions (not whole participants) are split 80/20 between training and validation, independently per participant; this detail matters because it guarantees that all 19 participants appear in every session, so the only variable that changes between Month~0(val) and Month~1--6 is elapsed time, never which participants are being evaluated.
+
+\subsection{Signal Preprocessing}
+Eight-channel sEMG is amplitude-normalized, rectified, and low-pass filtered to obtain an envelope. The envelope is segmented into overlapping 300-sample frames with a 30-sample stride, and each frame is labeled against the annotated gesture interval by a dual-tolerance overlap rule (a frame counts as the gesture if it covers at least 75\% of the frame itself, or at least 50\% of the annotated interval's total duration, whichever criterion is easier to satisfy for that interval). Each frame is then converted to a $13\times24\times8$ spectrogram tensor via the short-time Fourier transform. Frame-level class imbalance (roughly two-thirds of frames are the \emph{noGesture} class) is corrected with balanced class weights, computed once from Month~0 training data and applied identically to the backbone's cross-entropy loss, the Softmax head's loss, and the bandit's reward scale, so that no mechanism is implicitly favored by class frequency.
+
+\subsection{Transformer-Encoder Backbone}
+The feature extractor follows an Inception-style convolutional stage \cite{Isabel2023} (parallel branches per block, extracting features at multiple receptive-field sizes) folded into a single Transformer-encoder block \cite{Vaswani2017}, trained end-to-end with cross-entropy on Month~0 and then frozen at its final dropout layer. This freeze point yields a fixed-length representation $\mathbf{z}$ that is shared, unmodified, by both decision mechanisms described in Section~\ref{sec:decision}: neither Softmax nor LinUCB ever changes the backbone's weights or sees a gradient from it. This backbone, at larger scale, previously reached 95.25\% accuracy on a 612-participant sEMG dataset \cite{HGREncoder}, motivating its use here as an architecture with an established track record rather than an untested design.
+
+We train the same architecture at three capacities to test whether any effect reported in Section~\ref{sec:results} is an artifact of one particular network size, rather than a property of the representation-learning approach itself: large (6 Inception blocks, embedding dimension $d_{model}{=}128$, 8 attention heads, 128-d output), medium (4 blocks, $d_{model}{=}64$, 4 heads, 64-d output), and small (2 blocks, $d_{model}{=}32$, 2 heads, 32-d output). Every other training detail (loss, class weights, stopping rule, evaluation protocol) is identical across the three capacities, so capacity is the only variable that changes between them.
+
+\subsection{Covariate-Shift Testing on the Frozen Representation}
+Before asking whether accuracy changes, we ask a more direct question: does the frozen representation $\mathbf{z}$ itself occupy a different region of feature space in later months than it did at calibration time. This distinction matters because a decision head that compensates well for a real shift can keep accuracy flat while the underlying representation has, in fact, moved; testing $\mathbf{z}$ directly, independently of any classifier's accuracy, is the only way to rule that out. We use two independent two-sample tests between Month~0 and each later month. Maximum Mean Discrepancy (MMD$^2$) is computed with a Gaussian RBF kernel, with the kernel bandwidth set by the median-heuristic rule \cite{Gretton2012MMD}; a domain classifier (logistic regression, 5-fold cross-validated) is trained to predict whether a given feature vector comes from Month~0 or from month $m$, and its cross-validated accuracy is converted to the $\mathcal{H}$-divergence-based $\mathcal{A}$-distance $d_{\mathcal{A}}=2(1-2\epsilon)$, where $\epsilon$ is the classifier's error rate \cite{BenDavid2010Domain}: a domain classifier at chance level ($\epsilon=0.5$) gives $d_{\mathcal{A}}=0$ (indistinguishable distributions), while a perfect classifier ($\epsilon=0$) gives $d_{\mathcal{A}}=2$ (fully separable). Both statistics are tested for significance with a 2000-iteration permutation test, and the resulting twelve $p$-values (six months times two tests) are jointly assessed with a Holm-Bonferroni correction for multiple comparisons.
+
+\subsection{Decision Mechanisms: Softmax and LinUCB}
+\label{sec:decision}
+A Softmax head ($z$-score-normalized input, weighted cross-entropy loss, early-stopped on Month~0 validation accuracy) instantiates the supervised paradigm: at every step it is told the correct gesture label directly. LinUCB \cite{Li2010LinUCB} instantiates a reinforcement-learning paradigm instead: it treats the frozen representation $\mathbf{z}_t$ as context and each gesture as an arm to choose, selecting $\hat y=\arg\max_i \hat\theta_i^\top \mathbf{x}_t+\alpha\sqrt{\mathbf{x}_t^\top A_i^{-1}\mathbf{x}_t}$ (a predicted reward plus an uncertainty bonus scaled by $\alpha$), and updating its per-arm parameters via a Sherman-Morrison rank-one update after observing only a scalar reward $r_t=\pm w_{c^*}$, never the true label itself; this is the essential difference from Softmax, and the reason LinUCB is a reinforcement-learning mechanism rather than a relabeled classifier. LinUCB carries sublinear regret guarantees under this update rule \cite{Chu2011Regret}.
+
+Both mechanisms are warm-started once on Month~0 under the same kind of rule (shuffled-epoch training with early stopping on Month~0 validation accuracy) and then frozen, exactly like the backbone: LinUCB additionally drops its exploration term at evaluation time, since exploration only has a purpose while a policy is still being learned. Their epoch budgets differ (Softmax: up to 200 epochs, patience 10; LinUCB: up to 20 epochs, patience 5, reflecting that its per-epoch update is far cheaper than backpropagation), but both are stopped by the same validation criterion rather than a fixed schedule. This matters for the comparison in Section~\ref{sec:results}: because both paradigms are calibrated once and then frozen under an equivalent kind of stopping rule, any difference between them in Month~1--6 can be attributed to the decision paradigm itself, rather than to one paradigm being cut off before it had converged.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{The Frozen Representation Shifts, With a Small Effect Size}
+Both MMD$^2$ and the domain-classifier $\mathcal{A}$-distance reject the null hypothesis of no distributional difference at every month ($p<0.05$), and this survives a Holm-Bonferroni correction across all twelve tests, including the largest individual $p$-value (Month~4 MMD, $p=0.034$). The domain classifier's cross-validated accuracy ranges only 52.8--59.4\% against a 50\% chance level (equivalently, $\mathcal{A}$-distance $\le 0.38$ out of a maximum of 2): the shift is statistically real, but its magnitude is small, consistent with Fig.~\ref{fig:covshift}, where MMD$^2$ peaks at Month~5 (0.00467) and dips at Month~4 (0.00048), non-monotonically over the six months.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{fig_covariate_shift_en.png}
+\caption{MMD$^2$ (left) and domain-classifier $\mathcal{A}$-distance (right) between Month~0 and each later month. Asterisks mark $p<0.05$.}
+\label{fig:covshift}
+\end{figure}
+
+\subsection{Accuracy Drop is Governed by Backbone Capacity, Not by Decision Paradigm}
+Table~\ref{tab:results} reports Month~0(val)-to-Month~6 accuracy for both paradigms at all three backbone capacities. The drop is a narrow 4.6--5.9\% regardless of capacity or decision paradigm; Fig.~\ref{fig:sl_vs_rl} shows both paradigms tracking each other closely across all seven sessions and three scales. Because this 4.6--5.9\% band does not widen as backbone capacity shrinks by two orders of magnitude (from 128-d down to 32-d), capacity governs the absolute accuracy level (larger backbones reach higher accuracy at every session) but not how much either paradigm drifts away from its own Month~0 baseline; and because the drop is essentially the same whether the decision head is told the correct label directly (Softmax) or only a scalar reward (LinUCB), the paradigm itself does not appear to determine robustness to this shift.
+
+\begin{table}[t]
+\caption{Accuracy at Month~0(val) vs.\ Month~6, and the relative drop, for both decision paradigms at three backbone capacities.}
+\label{tab:results}
+\centering
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\multirow{2}{*}{\textbf{Capacity}} & \multicolumn{3}{c}{\textbf{Softmax}} & \multicolumn{3}{c}{\textbf{LinUCB}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & M0 & M6 & Drop & M0 & M6 & Drop \\
+\midrule
+Large  & 93.9 & 89.4 & 4.8\% & 93.3 & 87.8 & 5.9\% \\
+Medium & 92.0 & 87.8 & 4.6\% & 91.3 & 87.0 & 4.8\% \\
+Small  & 86.7 & 82.5 & 4.8\% & 84.6 & 80.7 & 4.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_sl_vs_rl_scales_en.png}
+\caption{Accuracy across seven sessions, Softmax vs.\ LinUCB, at three backbone capacities.}
+\label{fig:sl_vs_rl}
+\end{figure}
+
+Every model's single largest step is between Month~0(val) and Month~1, not a gradual month-over-month decline. Two design properties, not a data artifact, explain most of this: Month~0(val) shares its recording session with Month~0(train), while Month~1--6 are each a new session; and every model's stopping point is selected by Month~0(val) accuracy (\texttt{ValidationPatience}), which mechanically favors that split. We could not fully separate this one-time session-identity step from genuine month-over-month drift within the reported drop percentages, and note this as an open question rather than apportion it without direct evidence.
+
+\section{Discussion}
+\label{sec:discussion}
+
+Together, these results support a narrower claim than either ``there is no drift'' or ``the decision paradigm determines robustness.'' A frozen sEMG representation shifts measurably but modestly across six months, and this shift is only visible when tested directly on the representation itself; the resulting accuracy decline, in turn, is governed by backbone capacity rather than by whether the decision head is a supervised classifier or a bandit. This separates two claims that longitudinal HGR studies often conflate: a stable accuracy curve is evidence that a system tolerates drift well, but it is not, on its own, evidence that no drift occurred.
+
+This study has three limitations. First, LinUCB is evaluated frozen and purely exploitative after warm-start; a permanently online, classifier-guided variant \cite{LinPaskettYang2025} was set aside to keep both paradigms under matched, non-adaptive conditions. Second, neither MMD$^2$ nor the accuracy drop is monotonic across months, and we lack a mechanistic explanation for this non-monotonicity. Third, the backbone is trained once with cross-entropy and frozen; LinUCB never shapes the representation itself, so this is not a test of end-to-end reinforcement learning.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+A frozen sEMG representation exhibits a small but statistically real covariate shift over six months, corresponding to a modest 4.6--5.9\% accuracy decline that is consistent across three Transformer-encoder capacities and both a supervised Softmax head and a LinUCB bandit: decision paradigm does not change how much the system drifts, backbone capacity does. Future work should test whether this pattern holds with the backbone trained end-to-end from reward alone rather than frozen after supervised pretraining, and whether it generalizes to other decision-head families and to a larger cohort.
+
+\section*{Data and Code Availability}
+The longitudinal sEMG dataset used in this study is not publicly released: participant consent does not yet extend to unrestricted public redistribution (broadening it is in progress), and the dataset remains under active use by other ongoing studies in the same laboratory. It is available from the authors upon reasonable request. The complete analysis code is publicly available at \url{https://github.com/laboratorioAI/hgr-emg-longitudinal-study}.
+
+\section*{Compliance with Ethical Standards}
+All participants provided written informed consent prior to data collection, in accordance with the protocols of the Artificial Intelligence and Computer Vision Research Lab, Escuela Polit\'ecnica Nacional.
+
+\section*{Acknowledgment}
+The authors thank the Artificial Intelligence and Computer Vision Research Lab, Escuela Polit\'ecnica Nacional, for the data collection infrastructure used in this study.
+
+\bibliographystyle{IEEEbib}
+\bibliography{bib}
+
+\end{document}

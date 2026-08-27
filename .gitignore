@@ -14,6 +14,7 @@ DatastoresStatFeatures/
 *.fls
 *.fdb_latexmk
 *.out
+*.pdf
 
 # OS/editor cruft
 .DS_Store

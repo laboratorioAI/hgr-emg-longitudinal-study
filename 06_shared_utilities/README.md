@@ -1,7 +1,7 @@
 # Shared Utilities
 
 Used throughout every stage of the pipeline. Add this folder to your MATLAB path before running
-anything else (`addpath('08_shared_utilities')`).
+anything else (`addpath('06_shared_utilities')`).
 
 - **`Shared.m`** -- a `classdef` of shared constants and static helper functions: windowing parameters
   (`FRAME_WINDOW`, `WINDOW_STEP`), the gesture class list, signal preprocessing (rectification +

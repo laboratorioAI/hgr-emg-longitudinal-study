@@ -5,7 +5,7 @@ from the paper's compressed prose. Kept here as a single reference table so ICAS
 limit does not force any hyperparameter out of the reproducible record -- if the paper text and this
 table ever disagree, this table (and the underlying `.m` file) is authoritative.
 
-## Signal preprocessing and windowing (`08_shared_utilities/Shared.m`)
+## Signal preprocessing and windowing (`06_shared_utilities/Shared.m`)
 
 | Parameter | Value |
 |---|---|
@@ -35,7 +35,7 @@ table ever disagree, this table (and the underlying `.m` file) is authoritative.
 | Feed-forward expansion ratio | ×2 (all capacities) | -- |
 | Freeze point | final dropout layer after the Transformer-encoder feed-forward block (`dropout_2`) | -- |
 
-## Softmax decision head (`04_decision_heads/trainSoftmaxHead.m`)
+## Softmax decision head (`03_decision_heads/trainSoftmaxHead.m`)
 
 | Parameter | Value | Source line |
 |---|---|---|
@@ -47,7 +47,7 @@ table ever disagree, this table (and the underlying `.m` file) is authoritative.
 | Mini-batch size | 128 | L61 |
 | Validation patience (early stopping) | 10 | L66 |
 
-## LinUCB contextual bandit (`04_decision_heads/context_bandit.m`)
+## LinUCB contextual bandit (`03_decision_heads/context_bandit.m`)
 
 | Parameter | Value | Source line |
 |---|---|---|
@@ -56,36 +56,10 @@ table ever disagree, this table (and the underlying `.m` file) is authoritative.
 | Validation patience (early stopping) | 5 | L55 |
 | Ridge regression prior | `A_i` initialized to identity, `b_i` initialized to zero, per arm | -- |
 | Update rule | Sherman-Morrison rank-one update, O(d²) | -- |
-| Warm-start protocol | Month-0 only, same shuffled-epoch procedure as Softmax; stopping rule is equivalent in kind (validation-based patience) but not identical in epoch budget or patience value -- see max warm-start epochs / validation patience above vs. Softmax's 200 / 10 | -- |
+| Warm-start protocol | Month-0 only, same shuffled-epoch procedure as Softmax; stopping rule is equivalent in kind (validation-based patience) but not identical in epoch budget or patience value (see max warm-start epochs / validation patience above vs. Softmax's 200 / 10) | -- |
 | Evaluation after freeze | pure exploitation (`argmax θᵀx`), exploration term dropped | -- |
 
-## SVM (`03_classical_baselines/trainSVMHead.m`)
-
-| Parameter | Value |
-|---|---|
-| Multiclass strategy | one-vs-one (`fitcecoc`) |
-| Kernel candidates | linear, Gaussian -- selected by Month-0 validation accuracy |
-| Training-set cap | 1500 frames/class (random subsample, documented tractability tradeoff) |
-| Robustness-sweep fixed variants | linear (C=10), polynomial degree 2 (C=1) -- selected *without* using Month-0 validation accuracy, see `trainSVMVariants.m` |
-
-## k-NN (`03_classical_baselines/trainKNNHead.m`)
-
-| Parameter | Value |
-|---|---|
-| k candidates | {1, 3, 5, 7, 9, 11, 15, 21} -- selected by Month-0 validation accuracy |
-| Distance metric | Euclidean (default sweep); cosine (robustness-sweep fixed variant, k=9) |
-| Robustness-sweep fixed variants | k=5 (Euclidean), k=9 (cosine, distance-weighted) -- see `trainKNNVariants.m` |
-
-## Personalized per-participant models (`06_personalized_models/`)
-
-| Parameter | Value |
-|---|---|
-| SVM configuration used | linear kernel, C=10 (most stable configuration from the robustness sweep) |
-| k-NN configuration used | k=9, cosine distance, distance-weighted voting |
-| Softmax backbone used | small capacity (2 Inception blocks, d_model=32) |
-| Per-participant statistics | class weights, z-score normalization, and the 80/20 Month-0 split are all computed independently per participant, not reused from the population-level cache |
-
-## Covariate-shift tests (`05_covariate_shift/evaluateCovariateShift.m`)
+## Covariate-shift tests (`04_covariate_shift/evaluateCovariateShift.m`)
 
 | Parameter | Value |
 |---|---|
