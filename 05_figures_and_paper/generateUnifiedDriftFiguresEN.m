@@ -51,19 +51,19 @@ grosorEscala = [2.5, 2.0, 1.5];
 %% ======================================================================
 %% FIGURA 1: fig_sl_vs_rl_scales.png -- Softmax (SL) vs. LinUCB (RL), 3 escalas
 %% ======================================================================
-fig = figure('Visible', 'off', 'Position', [850 100 750 650]);
+fig = figure('Visible', 'off', 'Position', [850 100 950 850]);
 
 hold on;
 for v = 1:numel(variantes)
     tam = variantes{v};
     plot(xVals, resultados.(tam).softmax, estiloEscala{v}, 'Color', colorSoftmax, ...
-        'LineWidth', grosorEscala(v), 'MarkerFaceColor', colorSoftmax, 'MarkerSize', 6, ...
+        'LineWidth', grosorEscala(v)+1, 'MarkerFaceColor', colorSoftmax, 'MarkerSize', 9, ...
         'DisplayName', sprintf('Softmax (SL) - %s', etiquetasVariante{v}));
 end
 for v = 1:numel(variantes)
     tam = variantes{v};
     plot(xVals, resultados.(tam).bandit, estiloEscala{v}, 'Color', colorBandit, ...
-        'LineWidth', grosorEscala(v), 'MarkerFaceColor', colorBandit, 'MarkerSize', 6, ...
+        'LineWidth', grosorEscala(v)+1, 'MarkerFaceColor', colorBandit, 'MarkerSize', 9, ...
         'DisplayName', sprintf('Frozen LinUCB (RL) - %s', etiquetasVariante{v}));
 end
 hold off;
@@ -71,8 +71,12 @@ grid on;
 xticks(xVals); xticklabels(monthLabels);
 ylabel('Accuracy (%)'); xlabel('Session');
 title({'CNN-Transformer-encoder backbone:', 'Softmax (SL) vs. frozen LinUCB (RL), 3 scales'});
-legend('Location', 'southoutside', 'NumColumns', 2, 'FontSize', 8);
+legend('Location', 'southoutside', 'NumColumns', 2, 'FontSize', 13);
 ylim([70 100]);
+set(gca, 'FontSize', 17);
+set(get(gca,'XLabel'), 'FontSize', 18);
+set(get(gca,'YLabel'), 'FontSize', 18);
+set(get(gca,'Title'), 'FontSize', 18, 'FontWeight', 'bold');
 
 exportgraphics(fig, fullfile(outDir, 'fig_sl_vs_rl_scales_en.png'), 'Resolution', 200);
 close(fig);

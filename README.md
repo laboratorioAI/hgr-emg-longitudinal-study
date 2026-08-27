@@ -82,10 +82,13 @@ the annotated gesture interval.
 
 ## Compiling the paper
 
-`05_figures_and_paper/paper/` contains everything needed to compile the ICASSP-format PDF locally:
-`ICASSP2027-paper.tex`, `bib.bib`, and the official ICASSP `spconf.sty` / `IEEEbib.bst` style files
-(these are the standard IEEE Signal Processing Society conference template files, included here for
-convenience -- if the official submission portal provides an updated author kit, prefer that one).
+This paper targets the **OJSP track** of ICASSP 2027 (IEEE Open Journal of Signal Processing "short
+paper" category: 8 pages of technical content + 1 references-only page), not the standard 4+1-page
+conference track, so it uses `IEEEtran` in journal mode rather than the `spconf` conference template.
+`05_figures_and_paper/paper/` contains everything needed to compile it locally: `ICASSP2027-paper.tex`,
+`bib.bib`, `IEEEtran.cls`, and `IEEEbib.bst` (a numbered IEEE citation style; swap in the official
+`IEEEtran.bst` from the OJSP author kit if the submission portal requires that exact file -- the
+citation format it produces is the same).
 
 ```bash
 pdflatex -interaction=nonstopmode ICASSP2027-paper.tex
@@ -94,8 +97,8 @@ pdflatex -interaction=nonstopmode ICASSP2027-paper.tex
 pdflatex -interaction=nonstopmode ICASSP2027-paper.tex
 ```
 
-This produces a 5-page PDF (4 pages of technical content + 1 references-only page, the ICASSP 2027
-page limit) with zero LaTeX warnings when built against this repository's files.
+This produces a 5-page PDF (well under the 8+1-page OJSP-track limit) with zero LaTeX warnings when
+built against this repository's files.
 
 ## Hyperparameters
 

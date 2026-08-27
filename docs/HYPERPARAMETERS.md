@@ -1,9 +1,10 @@
 # Hyperparameters
 
 Every value below is quoted directly from the scripts in this repository (file and line noted), not
-from the paper's compressed prose. Kept here as a single reference table so ICASSP's strict 4-page
-limit does not force any hyperparameter out of the reproducible record -- if the paper text and this
-table ever disagree, this table (and the underlying `.m` file) is authoritative.
+from the paper's compressed prose. The paper targets the OJSP track of ICASSP 2027 (8 pages of
+technical content + 1 references-only page), which leaves more room than the standard 4+1-page track,
+but this table is still kept as a single authoritative reference -- if the paper text and this table
+ever disagree, this table (and the underlying `.m` file) is authoritative.
 
 ## Signal preprocessing and windowing (`06_shared_utilities/Shared.m`)
 
