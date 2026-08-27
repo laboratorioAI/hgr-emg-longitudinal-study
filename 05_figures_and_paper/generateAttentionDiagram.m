@@ -1,24 +1,22 @@
-% #################################################################
-% Diagrama comparando la longitud de camino maxima entre RNN, CNN/TCN
-% dilatada, y autoatencion -- la justificacion de primeros principios
-% (Vaswani et al. 2017, Tabla 1) de por que se eligio autoatencion
-% despues de la CNN, en vez de una capa recurrente o convolucional
-% adicional para modelar dependencias temporales.
-% #################################################################
+% Diagram comparing the maximum path length between a recurrent layer,
+% a dilated convolution (TCN), and self-attention: the first-principles
+% justification (Vaswani et al. 2017, Table 1) for placing self-attention
+% after the CNN stage, rather than an additional recurrent or
+% convolutional layer, to model temporal dependencies.
 
 clear; clc;
 
-fig = figure('Visible', 'off', 'Position', [100 100 1100 500], 'Color', 'w');
+fig = figure('Visible', 'off', 'Position', [100 100 1500 700], 'Color', 'w');
 ax = axes('Position', [0 0 1 1], 'Visible', 'off');
 xlim(ax, [0 11]); ylim(ax, [0 5]); hold(ax, 'on');
 
-text(ax, 5.5, 4.75, 'Longitud de camino máxima entre dos posiciones de la secuencia', ...
-    'HorizontalAlignment', 'center', 'FontSize', 13, 'FontWeight', 'bold');
-text(ax, 5.5, 4.45, 'Propiedad algebraica del mecanismo, no un resultado empírico (Vaswani et al., 2017, Tabla 1)', ...
-    'HorizontalAlignment', 'center', 'FontSize', 10);
+text(ax, 5.5, 4.75, 'Maximum path length between two sequence positions', ...
+    'HorizontalAlignment', 'center', 'FontSize', 18, 'FontWeight', 'bold');
+text(ax, 5.5, 4.45, 'Algebraic property of the mechanism, not an empirical result (Vaswani et al., 2017, Table 1)', ...
+    'HorizontalAlignment', 'center', 'FontSize', 13);
 
-n = 5; % posiciones de ejemplo en la secuencia
-mechs = struct('name', {'Recurrente (RNN)', 'Convolución dilatada (TCN)', 'Autoatención'}, ...
+n = 5; % example sequence positions
+mechs = struct('name', {'Recurrent (RNN)', 'Dilated convolution (TCN)', 'Self-attention'}, ...
                'complexity', {'O(n)', 'O(log_k n)', 'O(1)'}, ...
                'x0', {0.6, 4.1, 7.6});
 colorNode = [0.70 0.85 1.00];
@@ -30,44 +28,44 @@ for m = 1:3
     xs = x0 + (0:n-1) * 0.55;
     for i = 1:n
         rectangle(ax, 'Position', [xs(i)-0.12 yNodes-0.12 0.24 0.24], 'Curvature', 1, ...
-            'FaceColor', colorNode, 'EdgeColor', 'k', 'LineWidth', 1);
+            'FaceColor', colorNode, 'EdgeColor', 'k', 'LineWidth', 1.2);
     end
     switch m
-        case 1 % RNN: cadena secuencial, cada paso conecta solo al siguiente
+        case 1 % RNN: sequential chain, each step connects only to the next
             for i = 1:n-1
-                annotation(fig, 'arrow', [(xs(i)+0.12)/11 (xs(i+1)-0.12)/11], [yNodes/5 yNodes/5], 'LineWidth', 1, 'Color', colorEdge);
+                annotation(fig, 'arrow', [(xs(i)+0.12)/11 (xs(i+1)-0.12)/11], [yNodes/5 yNodes/5], 'LineWidth', 1.2, 'Color', colorEdge);
             end
             for i = 1:n-1
                 annotation(fig, 'arrow', [(xs(i)+0.05)/11 (xs(i+1)-0.05)/11], [(yNodes+0.4)/5 (yNodes+0.4)/5], ...
-                    'LineWidth', 1.4, 'Color', [0.75 0.15 0.1], 'HeadLength', 5, 'HeadWidth', 5);
+                    'LineWidth', 1.8, 'Color', [0.75 0.15 0.1], 'HeadLength', 6, 'HeadWidth', 6);
             end
-        case 2 % TCN dilatada: saltos crecientes (dilatacion 1,2,4)
+        case 2 % Dilated TCN: growing skips (dilation 1,2,4)
             skips = [1 1 2 4];
             pos = 1;
-            path = pos;
             while pos < n
                 step = min(skips(min(end,pos)), n-pos);
                 nextPos = pos + max(step,1);
                 if nextPos > n, nextPos = n; end
                 annotation(fig, 'arrow', [(xs(pos)+0.05)/11 (xs(nextPos)-0.05)/11], ...
-                    [(yNodes+0.4)/5 (yNodes+0.4)/5], 'LineWidth', 1.4, 'Color', [0.75 0.15 0.1]);
+                    [(yNodes+0.4)/5 (yNodes+0.4)/5], 'LineWidth', 1.8, 'Color', [0.75 0.15 0.1]);
                 pos = nextPos;
             end
-        case 3 % Autoatencion: todos conectan directo con todos (mostrar solo primero-ultimo)
+        case 3 % Self-attention: every position connects directly to every other (show first-to-last)
             annotation(fig, 'arrow', [(xs(1)+0.05)/11 (xs(n)-0.05)/11], [(yNodes+0.4)/5 (yNodes+0.4)/5], ...
-                'LineWidth', 1.6, 'Color', [0.1 0.55 0.2]);
+                'LineWidth', 2.0, 'Color', [0.1 0.55 0.2]);
             for i = 2:n-1
-                plot(ax, [xs(1) xs(i)], [yNodes+0.12 yNodes+0.12], ':', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.8);
+                plot(ax, [xs(1) xs(i)], [yNodes+0.12 yNodes+0.12], ':', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.0);
             end
     end
-    text(ax, x0 + (n-1)*0.55/2, yNodes-0.55, mechs(m).name, 'HorizontalAlignment', 'center', 'FontSize', 10.5, 'FontWeight', 'bold');
-    text(ax, x0 + (n-1)*0.55/2, yNodes-0.9, mechs(m).complexity, 'HorizontalAlignment', 'center', 'FontSize', 13, 'Color', [0.75 0.15 0.1], 'FontWeight', 'bold');
+    text(ax, x0 + (n-1)*0.55/2, yNodes-0.55, mechs(m).name, 'HorizontalAlignment', 'center', 'FontSize', 14, 'FontWeight', 'bold');
+    text(ax, x0 + (n-1)*0.55/2, yNodes-0.9, mechs(m).complexity, 'HorizontalAlignment', 'center', 'FontSize', 17, 'Color', [0.75 0.15 0.1], 'FontWeight', 'bold');
 end
 
-text(ax, 5.5, 0.75, ['Un gesto EMG no tiene duración ni posición fija dentro de la ventana: el frame de inicio de la contracción y', ...
-    newline 'el de su pico pueden estar separados varios pasos. La autoatención conecta cualquier par de posiciones en un solo salto.'], ...
-    'HorizontalAlignment', 'center', 'FontSize', 10);
+text(ax, 5.5, 0.75, ['An EMG gesture has no fixed duration or position within the window: the frame where a', ...
+    newline 'contraction starts and the frame of its peak may be several steps apart. Self-attention connects', ...
+    newline 'any two positions in a single hop, regardless of how far apart they are.'], ...
+    'HorizontalAlignment', 'center', 'FontSize', 13);
 
-exportgraphics(fig, 'FigurasReales/diagrama_longitud_camino.png', 'Resolution', 200);
+exportgraphics(fig, 'RL_vs_SL/fig_attention_pathlength.png', 'Resolution', 220);
 close(fig);
-fprintf('Diagrama guardado en FigurasReales/diagrama_longitud_camino.png\n');
+fprintf('Saved: RL_vs_SL/fig_attention_pathlength.png\n');
