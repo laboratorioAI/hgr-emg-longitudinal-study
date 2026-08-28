@@ -58,7 +58,7 @@ Fig.~\ref{fig:pipeline} gives an overview of the full pipeline described in this
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{fig_pipeline_overview.png}
+\includegraphics[width=\linewidth]{fig_pipeline_overview.jpg}
 \caption{Overall pipeline. The backbone is trained once on Month~0 and frozen at \texttt{dropout\_2}; the resulting 128-dimensional representation $\mathbf{z}$ is shared, unmodified, by the covariate-shift test and by both decision mechanisms, each of which is likewise frozen after Month~0 and only evaluated, never retrained, on Month~1--6.}
 \label{fig:pipeline}
 \end{figure}
@@ -79,7 +79,7 @@ The feature extractor follows an Inception-style convolutional stage \cite{Isabe
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{fig_inception_block.png}
+\includegraphics[width=\linewidth]{fig_inception_block.jpg}
 \caption{Internal structure of one Inception block, matching the actual implementation. Four parallel branches extract features at different receptive-field sizes ($1\times1$, $3\times3$, $5\times5$, and pooled), and their outputs are concatenated channel-wise before being passed to the next block or to the Transformer stage.}
 \label{fig:inception}
 \end{figure}
@@ -88,7 +88,7 @@ After the final Inception block, the resulting feature map is flattened and line
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{fig_attention_pathlength.png}
+\includegraphics[width=\linewidth]{fig_attention_pathlength.jpg}
 \caption{Maximum path length between two positions in the sequence, for a recurrent layer, a dilated convolution, and self-attention, following Vaswani et al. \cite{Vaswani2017}, Table~1. This algebraic property, not an empirical measurement, is why self-attention is used to model temporal structure after the CNN stage.}
 \label{fig:attention}
 \end{figure}
