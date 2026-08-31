@@ -125,7 +125,7 @@ We use two independent two-sample tests between Month~0 and each of the six late
 
 \textbf{Maximum Mean Discrepancy.} Let $A=\{a_1,\ldots,a_{n_A}\}$ and $B=\{b_1,\ldots,b_{n_B}\}$ be the two subsamples, drawn from the 128-dimensional frozen representation. With a Gaussian RBF kernel $k(x,y)=\exp(-\lVert x-y\rVert^2/2\sigma^2)$, the unbiased MMD$^2$ estimator we use is
 \begin{multline}
-\widehat{\mathrm{MMD}}^2 = \frac{1}{n_A(n_A-1)}\sum_{i\neq j} k(a_i,a_j) + \frac{1}{n_B(n_B-1)}\sum_{i\neq j} k(b_i,b_j) \\ - \frac{2}{n_A n_B}\sum_{i,j} k(a_i,b_j),
+\widehat{\mathrm{MMD}}^2 = \frac{1}{n_A(n_A-1)}\sum_{i\neq j} k(a_i,a_j) \\ + \frac{1}{n_B(n_B-1)}\sum_{i\neq j} k(b_i,b_j) - \frac{2}{n_A n_B}\sum_{i,j} k(a_i,b_j),
 \label{eq:mmd}
 \end{multline}
 which excludes the diagonal terms $k(a_i,a_i)=k(b_i,b_i)=1$ from the within-group sums, the standard unbiased-estimator correction \cite{Gretton2012MMD}. The kernel bandwidth $\sigma$ is set once per month by the median-heuristic rule: $\sigma$ is the median of the pairwise Euclidean distances within a random sub-sample (at most 500 points) of the pooled $A\cup B$ set, and that same $\sigma$ is then reused for every permutation described next, so that the permutation null distribution is evaluated under an identical kernel to the one used for the observed statistic.
